@@ -1,0 +1,2 @@
+#ignore stl generated files
+*.stl
