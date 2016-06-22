@@ -1,59 +1,51 @@
 //Linear Extrude with Twist and Scale as interpolated functions
-// This module does not need to be modified, 
+// The local function definitions need to point to valid functions
+// Otherwise, this module does not need to be modified,  
 //  - unless default parameters want to be changed 
 //  - or additional parameters want to be forwarded
 module linear_extrude_ftfs(height=1,isteps=20,slices=0){
+    //local function definitions for twist and scale, respectively
+    function ftw(x) = leftfs_ftw(x);  //<--- !! User Defined Twist
+    function fsc(x) = leftfs_fsc(x);  //<--- !! User Defined Scale
     //union of piecewise generated extrudes
     union(){  
       for(i=[0:1:isteps-1]){
         translate([0,0,i*height/isteps])
           linear_extrude(
             height=height/isteps
-            ,twist=leftfs_ftw((i+1)/isteps)-leftfs_ftw(i/isteps)
-            ,scale=leftfs_fsc((i+1)/isteps)/leftfs_fsc(i/isteps)
+            ,twist=ftw((i+1)/isteps)-ftw(i/isteps)
+            ,scale=fsc((i+1)/isteps)/fsc(i/isteps)
             ,slices=slices
           )
-            rotate([0,0,-leftfs_ftw(i/isteps)])
-              scale(leftfs_fsc(i/isteps))
-                obj2D_leftfs();
+            rotate([0,0,-ftw(i/isteps)])
+              scale(fsc(i/isteps))
+                children();
       }
     }
 }
-// This function defines the scale function
-//  - Function name must not be modified
-//  - Modify the contents/return value to define the function
+// Example function defines the scale function
+// Function name defined in module local function definition
 function leftfs_fsc(x)=
     let(scale=3,span=140,start=20)
     scale*sin(x*span+start);
-// This function defines the twist function
-//  - Function name must not be modified
-//  - Modify the contents/return value to define the function
+// Example function defines the twist function
+// Function name defined in module local function definition
 function leftfs_ftw(x)=
     let(twist=30,span=360,start=0)
     twist*sin(x*span+start);
-// This module defines the base 2D object to be extruded
-//  - Function name must not be modified
-//  - Modify the contents to define the base 2D object
-module obj2D_leftfs(){
-     square([12,9]);
-}
 
-//Left rendered objects demonstrating the steps effect
-translate([0,-50,-60])
-rotate([0,0,90])
-linear_extrude_ftfs(height=50,isteps=3);
+
+//Left rendered object demonstrating the steps effect
 translate([0,-50,0])
-linear_extrude_ftfs(height=50,isteps=3);
+  linear_extrude_ftfs(height=50,isteps=3)
+    square([12,9]);
 
-//Center rendered objects demonstrating the slices effect
-translate([0,0,-60])
-rotate([0,0,90])
-linear_extrude_ftfs(height=50,isteps=3,slices=30);
-linear_extrude_ftfs(height=50,isteps=3,slices=30);
+//Center rendered object demonstrating the slices effect
+translate([0,0,0])
+  linear_extrude_ftfs(height=50,isteps=3,slices=30)
+    square([12,9]);
 
-//Right rendered objects with default parameters
-translate([0,50,-60])
-rotate([0,0,90])
-linear_extrude_ftfs(height=50);
+//Right rendered object with default parameters
 translate([0,50,0])
-linear_extrude_ftfs(height=50);
+  linear_extrude_ftfs(height=50)
+    square([12,9]);
